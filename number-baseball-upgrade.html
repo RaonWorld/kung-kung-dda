@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>숫자 야구 게임</title>
+  </head>
+  <body>
+    <!-- Mark Up -->
+    <form id="form">
+      <input type="text" id="input" />
+      <button>확인</button>
+    </form>
+    <div id="logs"></div>
+
+    <!-- Scripts -->
+    <script>
+      const $input = document.querySelector("#input");
+      const $form = document.querySelector("#form");
+      const $logs = document.querySelector("#logs");
+
+      // 1 ~ 9까지의 랜덤 수를 생성하는 로직.
+      const numbers = []; // 1 ~ 9까지 담을 배열. (단순 나열은 배열, 값에 이름이 붙어야 되는 경우는 객체)
+
+      for (let n = 1; n <= 9; n++) {
+        numbers.push(n);
+      }
+
+      const answer = []; // 랜덤 수 4개를 담을 배열
+      for (let n = 0; n <= 3; n++) {
+        const index = Math.floor(Math.random() * numbers.length);
+        answer.push(numbers[index]);
+        numbers.splice(index, 1);
+      }
+
+      console.log(answer);
+
+      // 입력값 검증
+      const tries = [];
+      let out = 0;
+
+      function checkInput(input) {
+        if (input.length !== 4) {
+          return alert("4자리 숫자를 입력하세요.");
+        }
+        if (new Set(input).size !== 4) {
+          return alert("중복되지 않게 입력하세요");
+        }
+        if (tries.includes(input)) {
+          return alert("이미 시도한 값입니다.");
+        }
+        return true;
+      }
+      $form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const value = $input.value;
+        $input.value = "";
+        const valid = checkInput(value);
+
+        if (!valid) return;
+        if (answer.join("") === value) {
+          $logs.textContent = "홈런";
+          return;
+        }
+        if (tries.length >= 9) {
+          const message = document.createTextNode(
+            `패배! 정답은 ${answer.join("")}`
+          );
+          $logs.appendChild(message);
+          return;
+        }
+
+        let strike = 0;
+        let ball = 0;
+
+        for (let i = 0; i < answer.length; i++) {
+          const index = value.indexOf(answer[i]);
+          if (index > -1) {
+            if (index === i) {
+              strike += 1;
+            } else {
+              ball += 1;
+            }
+          }
+        }
+
+        // 아웃 카운팅
+        if (strike === 0 && ball === 0) {
+          out += 1;
+          $logs.append(
+            out < 3
+              ? `일치하지 않습니다. ${out} 아웃`
+              : `일치하지 않습니다. ${out}으로 패배했습니다.`,
+            document.createElement("br")
+          );
+          tries.push(value);
+          return;
+        }
+
+        $logs.append(
+          `${value}: ${strike} 스트라이크 ${ball} 볼`,
+          document.createElement("br")
+        );
+        tries.push(value);
+      });
+    </script>
+  </body>
+</html>
